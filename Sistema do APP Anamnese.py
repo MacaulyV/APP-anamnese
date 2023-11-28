@@ -181,7 +181,7 @@ def agendar_consulta():
         agendar_consulta_rotina()
     elif opcao in ["2", "3"]:
         if opcao == "2":
-                        print("Você escolheu 'Consulta de Acompanhamento'.")
+            print("Você escolheu 'Consulta de Acompanhamento'.")
         else:
             print("Você escolheu 'Consulta de Emergência'.")
         especialidade = selecionar_especialidade()
@@ -193,12 +193,13 @@ def agendar_consulta():
 
         # Armazenar os dados da consulta no dicionário de consultas agendadas
         consultas_agendadas[nome] = {
-            "especialidade": especialidade,
-            "medico": medico,
-            "dia": dia['dia'],
-            "horario": horario,
-            "comentario": comentario,
-            "codigo_convenio": codigo_convenio
+            'tipo_consulta': opcao,
+            'especialidade': especialidade,
+            'medico': medico,
+            'dia': dia['dia'],
+            'horario': horario,
+            'comentario': comentario,
+            'codigo_convenio': codigo_convenio
         }
     else:
         print("Opção inválida. Por favor, tente novamente.")
@@ -209,7 +210,33 @@ def cancelar_consulta():
     if nome in consultas_agendadas:
         print("Aqui estão os detalhes da sua consulta:")
         print(f"Tipo de Consulta: {consultas_agendadas[nome]['tipo_consulta']}")
-        print(f"Nível de Prioridade: {consultas_agendadas[nome]['nivel_prioridade']}")
+        
+        if 'especialidade' in consultas_agendadas[nome]:
+            print(f"Especialidade: {consultas_agendadas[nome]['especialidade']}")
+        else:
+            print("Especialidade: Não especificada")
+        
+        if 'medico' in consultas_agendadas[nome]:
+            print(f"Médico: {consultas_agendadas[nome]['medico']}")
+        else:
+            print("Médico: Não especificado")
+        
+        if 'dia' in consultas_agendadas[nome]:
+            print(f"Dia: {consultas_agendadas[nome]['dia']}")
+        else:
+            print("Dia: Não especificado")
+        
+        if 'horario' in consultas_agendadas[nome]:
+            print(f"Horário: {consultas_agendadas[nome]['horario']}")
+        else:
+            print("Horário: Não especificado")
+        
+        if 'comentario' in consultas_agendadas[nome]:
+            print(f"Comentário: {consultas_agendadas[nome]['comentario']}")
+        else:
+            print("Comentário: Não especificado")
+        
+        # Removemos a linha que imprime o código do convênio
 
         if input("Você realmente deseja cancelar esta consulta? (S/N): ").lower() == 's':
             while True:
@@ -390,13 +417,122 @@ def teleconsulta():
         print("Opção inválida. Por favor, tente novamente.")
         teleconsulta()
 
+import datetime
+
+import datetime
+
+import datetime
+
+def registrar_sintomas():
+    sintomas = {
+        "1": "Dor de cabeça",
+        "2": "Febre",
+        "3": "Tosse",
+        "4": "Dificuldade para respirar",
+        "5": "Fadiga",
+        "6": "Dor abdominal",
+        "7": "Náusea e vômito",
+        "8": "Perda de apetite",
+        "9": "Tontura"
+    }
+
+    while True:
+        print("Por favor, selecione o sintoma que está sentindo:")
+        for opcao, descricao in sintomas.items():
+            print(f"{opcao}. {descricao}")
+
+        opcao_sintoma = input("Digite o número da opção escolhida: ")
+
+        if opcao_sintoma in sintomas:
+            print(f"Você selecionou: {sintomas[opcao_sintoma]}")
+            break
+        else:
+            print("Opção inválida. Por favor, tente novamente.")
+
+    intensidades = {
+        "1": "Leve: O sintoma é perceptível, mas não afeta significativamente as atividades diárias.",
+        "2": "Moderado: O sintoma é incômodo e pode afetar algumas atividades diárias.",
+        "3": "Grave: O sintoma é muito incômodo e afeta significativamente as atividades diárias.",
+        "4": "Muito grave: O sintoma é extremamente incômodo e impede a realização de atividades diárias."
+    }
+
+    while True:
+        print("Qual é a intensidade do seu sintoma?")
+        for opcao, descricao in intensidades.items():
+            print(f"{opcao}. {descricao}")
+
+        opcao_intensidade = input("Digite o número da opção escolhida: ")
+
+        if opcao_intensidade in intensidades:
+            pontos = int(opcao_intensidade)
+            intensidade = intensidades[opcao_intensidade]
+            break
+        else:
+            print("Opção inválida. Por favor, tente novamente.")
+
+    duracoes = {
+        "1": "Menos de 24 horas",
+        "2": "De 24 a 48 horas",
+        "3": "De 2 a 7 dias",
+        "4": "Mais de 7 dias"
+    }
+
+    while True:
+        print("Há quanto tempo você está sentindo esse sintoma?")
+        for opcao, descricao in duracoes.items():
+            print(f"{opcao}. {descricao}")
+
+        opcao_duracao = input("Digite o número da opção escolhida: ")
+
+        if opcao_duracao in duracoes:
+            pontos += int(opcao_duracao)
+            duracao = duracoes[opcao_duracao]
+            break
+        else:
+            print("Opção inválida. Por favor, tente novamente.")
+
+    data_hora_atual = datetime.datetime.now()
+    print(f"Data e hora do registro: {data_hora_atual}")
+
+    sintoma_info = {
+        'sintoma': sintomas[opcao_sintoma],
+        'intensidade': intensidades[opcao_intensidade],
+        'duracao': duracoes[opcao_duracao],
+        'data_hora': data_hora_atual
+    }
+    return sintoma_info, pontos
+
+def exibir_alerta(sintoma):
+    alertas = {
+        "Dor de cabeça": "Você está relatando uma dor de cabeça muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição médica séria. Recomendamos que você procure atendimento médico imediatamente.",
+        "Febre": "Sua febre está muito alta e persiste há mais de 7 dias. Isso pode indicar uma infecção grave. É importante que você procure atendimento médico o mais rápido possível.",
+        "Tosse": "Você está com uma tosse muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição respiratória séria. Recomendamos que você procure atendimento médico imediatamente.",
+        "Dificuldade para respirar": "Você está relatando dificuldade para respirar muito intensa que persiste há mais de 7 dias. Isso é muito preocupante e pode ser um sinal de uma condição médica séria. Procure atendimento médico imediatamente.",
+        "Fadiga": "Você está relatando fadiga muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição médica subjacente. Recomendamos que você procure atendimento médico imediatamente.",
+        "Dor abdominal": "Você está relatando uma dor abdominal muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição médica séria, como apendicite ou uma úlcera. Recomendamos que você procure atendimento médico imediatamente.",
+        "Náusea e vômito": "Você está relatando náusea e vômito muito intensos que persistem há mais de 7 dias. Isso pode ser um sinal de uma condição médica séria, como uma infecção gastrointestinal. Recomendamos que você procure atendimento médico imediatamente.",
+        "Perda de apetite": "Você está relatando uma perda de apetite muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição médica séria. Recomendamos que você procure atendimento médico imediatamente.",
+        "Tontura": "Você está relatando tontura muito intensa que persiste há mais de 7 dias. Isso pode ser um sinal de uma condição médica séria, como um problema de equilíbrio ou circulação. Recomendamos que você procure atendimento médico imediatamente."
+    }
+
+    if sintoma in alertas:
+        print(alertas[sintoma])
+    else:
+        print("Não há alertas para o seu sintoma.")
+
 def menu_inicial():
+    pontos = 0  # Inicialize a pontuação aqui
+    historico_sintomas = []  # Inicialize historico_sintomas aqui
     while True:
         print("Bem-vindo ao nosso aplicativo de saúde! Escolha uma opção:")
         print("1. Agendar consulta")
         print("2. Cancelar consulta marcada")
         print("3. Teleconsulta")
-        print("4. Sair")
+        print("4. Registrar sintomas")
+        if pontos >= 6:  # Agora esta condição pode acessar a pontuação atualizada
+            print("5. Alertas")
+        print("6. Histórico de registro de sintomas")
+        print("7. Sair")
 
         opcao = input("Digite o número da opção escolhida: ")
 
@@ -407,10 +543,27 @@ def menu_inicial():
         elif opcao == "3":
             teleconsulta()
         elif opcao == "4":
+            sintoma_info, pontos = registrar_sintomas()  # Atualize a pontuação e sintoma_info aqui
+            historico_sintomas.append(sintoma_info)  # Adicione sintoma_info ao histórico
+        elif opcao == "5" and pontos >= 6:
+            exibir_alerta(historico_sintomas[-1]['sintoma'])  # Passe o último sintoma para exibir_alerta()
+        elif opcao == "6":
+            for sintoma_info in historico_sintomas:
+                print(f"Sintoma: {sintoma_info['sintoma']}, Intensidade: {sintoma_info['intensidade']}, Duração: {sintoma_info['duracao']}, Data e hora do registro: {sintoma_info['data_hora']}")
+                print()  # Adicione uma linha em branco após cada registro
+        elif opcao == "7":
             print("Obrigado por usar nosso aplicativo. Até mais!")
             break
         else:
             print("Opção inválida. Por favor, tente novamente.")
 
+# No final do seu script
 menu_inicial()
+
+
+
+
+
+
+
 

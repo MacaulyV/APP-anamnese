@@ -36,13 +36,16 @@ dias = {
     "7": {"dia": "Domingo", "horarios": []}
 }
 
+# Dicionário para armazenar as consultas agendadas
+consultas_agendadas = {}
+
 # Função para confirmar o nome do usuário
 def confirmar_nome():
     while True:
         nome = input("Por favor, confirme o seu nome completo: ")
         if len(nome) <= 100 and re.match("^[A-Za-z ]*$", nome):
             print(f"Nome confirmado: {nome}.")
-            break
+            return nome
         else:
             print("Nome inválido. Por favor, tente novamente.")
 
@@ -57,11 +60,7 @@ def selecionar_especialidade():
 
         if opcao in especialidades:
             print(f"Você escolheu a especialidade de {especialidades[opcao]}.")
-            if input("Gostaria de selecionar um médico de sua escolha? (S/N): ").lower() == 's':
-                selecionar_medico(especialidades[opcao])
-            else:
-                selecionar_dia()
-            break
+            return especialidades[opcao]
         else:
             print("Opção inválida. Por favor, tente novamente.")
 
@@ -76,8 +75,7 @@ def selecionar_medico(especialidade):
 
         if 1 <= int(opcao) <= len(medicos[especialidade]):
             print(f"Você escolheu o médico {medicos[especialidade][int(opcao) - 1]}.")
-            selecionar_dia()
-            break
+            return medicos[especialidade][int(opcao) - 1]
         else:
             print("Opção inválida. Por favor, tente novamente.")
 
@@ -92,8 +90,7 @@ def selecionar_dia():
 
         if opcao in dias:
             print(f"Você escolheu o dia {dias[opcao]['dia']}.")
-            selecionar_horario(dias[opcao]['horarios'])
-            break
+            return dias[opcao]
         else:
             print("Opção inválida. Por favor, tente novamente.")
 
@@ -109,8 +106,7 @@ def selecionar_horario(horarios):
 
         if 1 <= int(opcao) <= len(horarios):
             print(f"Você escolheu o horário {horarios[int(opcao) - 1]}.")
-            adicionar_comentario()
-            break
+            return horarios[int(opcao) - 1]
         elif int(opcao) == len(horarios) + 1:
             selecionar_dia()
         else:
@@ -125,7 +121,9 @@ def adicionar_comentario():
             adicionar_comentario()
         else:
             print("Seu comentário foi adicionado com sucesso.")
-    inserir_codigo_convenio()
+            return comentario
+    else:
+        return None
 
 # Função para inserir o código do convênio
 def inserir_codigo_convenio():
@@ -133,7 +131,7 @@ def inserir_codigo_convenio():
         codigo = input("Digite o código do seu convênio: ")
         if len(codigo) == 10:
             print("Você acabou de marcar uma consulta. Você receberá um email de confirmação no email cadastrado no aplicativo.")
-            break
+            return codigo
         else:
             print("Código inválido. O código do convênio deve ter exatamente 10 caracteres. Por favor, tente novamente.")
 
@@ -142,16 +140,36 @@ def agendar_consulta_rotina():
         opcao = input("Você gostaria de selecionar um médico de sua escolha? (S/N): ")
 
         if opcao.lower() == "s":
-            selecionar_medico("Cardiologia")  # Aqui você pode substituir "Cardiologia" pela especialidade desejada
+            especialidade = "Cardiologia"  # Aqui você pode substituir "Cardiologia" pela especialidade desejada
+            medico = selecionar_medico(especialidade)
         elif opcao.lower() == "n":
             print("Você escolheu não selecionar um médico.")
-            selecionar_dia()
-            break
+            especialidade = None
+            medico = None
         else:
             print("Opção inválida. Por favor, tente novamente.")
+            continue
+
+        dia = selecionar_dia()
+        horario = selecionar_horario(dia['horarios'])
+        comentario = adicionar_comentario()
+        codigo_convenio = inserir_codigo_convenio()
+
+        # Armazenar os dados da consulta no dicionário de consultas agendadas
+        nome = confirmar_nome()
+        consultas_agendadas[nome] = {
+            "especialidade": especialidade,
+            "medico": medico,
+            "dia": dia['dia'],
+            "horario": horario,
+            "comentario": comentario,
+            "codigo_convenio": codigo_convenio
+        }
+
+        break
 
 def agendar_consulta():
-    confirmar_nome()
+    nome = confirmar_nome()
     print("Escolha o tipo de consulta que deseja agendar:")
     print("1. Consulta de Rotina")
     print("2. Consulta de Acompanhamento")
@@ -163,12 +181,214 @@ def agendar_consulta():
         agendar_consulta_rotina()
     elif opcao in ["2", "3"]:
         if opcao == "2":
-            print("Você escolheu 'Consulta de Acompanhamento'.")
+                        print("Você escolheu 'Consulta de Acompanhamento'.")
         else:
             print("Você escolheu 'Consulta de Emergência'.")
-        selecionar_especialidade()
+        especialidade = selecionar_especialidade()
+        medico = selecionar_medico(especialidade)
+        dia = selecionar_dia()
+        horario = selecionar_horario(dia['horarios'])
+        comentario = adicionar_comentario()
+        codigo_convenio = inserir_codigo_convenio()
+
+        # Armazenar os dados da consulta no dicionário de consultas agendadas
+        consultas_agendadas[nome] = {
+            "especialidade": especialidade,
+            "medico": medico,
+            "dia": dia['dia'],
+            "horario": horario,
+            "comentario": comentario,
+            "codigo_convenio": codigo_convenio
+        }
     else:
         print("Opção inválida. Por favor, tente novamente.")
+
+def cancelar_consulta():
+    nome = input("Por favor, insira o seu nome completo: ")
+
+    if nome in consultas_agendadas:
+        print("Aqui estão os detalhes da sua consulta:")
+        print(f"Tipo de Consulta: {consultas_agendadas[nome]['tipo_consulta']}")
+        print(f"Nível de Prioridade: {consultas_agendadas[nome]['nivel_prioridade']}")
+
+        if input("Você realmente deseja cancelar esta consulta? (S/N): ").lower() == 's':
+            while True:
+                codigo = input("Por favor, confirme o código do seu convênio: ")
+                if codigo == consultas_agendadas[nome]['codigo_convenio']:
+                    del consultas_agendadas[nome]
+                    print("Sua consulta foi cancelada com sucesso.")
+                    break
+                elif codigo.lower() == 'sair':
+                    print("Cancelamento de consulta cancelado.")
+                    menu_inicial()
+                    break
+                else:
+                    print("Código do convênio inválido. Por favor, tente novamente.")
+        else:
+            print("Cancelamento de consulta cancelado.")
+    else:
+        print("Não há consultas agendadas para este nome.")
+        menu_inicial()
+
+def questionario_emergencia():
+    perguntas = [
+        "Você tem alguma alergia?",
+        "Você toma algum medicamento?",
+        "Você tem alguma doença crônica?",
+        "Você já foi hospitalizado?"
+    ]
+
+    respostas = {}
+
+    for pergunta in perguntas:
+        while True:
+            resposta = input(pergunta + " (S/N): ")
+            if resposta.lower() in ['s', 'n']:
+                respostas[pergunta] = resposta
+                break
+            else:
+                print("Resposta inválida. Por favor, responda com 'S' para sim ou 'N' para não.")
+
+    print("Responda as próximas perguntas com sinceridade, elas decidirão seu tempo até ser atendido.")
+    if input("Você está pronto para prosseguir? (Digite 'OK' para continuar): ").lower() == 'ok':
+        return respostas
+    else:
+        menu_inicial()        
+
+def questionario_sintomas():
+    sintoma = input("Qual é o seu principal sintoma? (máximo de 30 caracteres): ")
+    if len(sintoma) > 30:
+        print("Seu sintoma excede o limite de 30 caracteres. Por favor, tente novamente.")
+        questionario_sintomas()
+    else:
+        print("Seu sintoma foi registrado com sucesso.")
+
+    print("Quando começou o seu sintoma?")
+    print("1. Menos de 24 horas atrás")
+    print("2. 1-3 dias atrás")
+    print("3. 4-7 dias atrás")
+    print("4. Mais de uma semana atrás")
+
+    opcao = input("Digite o número da opção escolhida: ")
+
+    if opcao == "1":
+        pontos = 1
+    elif opcao == "2":
+        pontos = 2
+    elif opcao == "3":
+        pontos = 3
+    elif opcao == "4":
+        pontos = 4
+    else:
+        print("Opção inválida. Por favor, tente novamente.")
+        questionario_sintomas()
+
+    print("Qual é a intensidade do seu sintoma?")
+    print("1. Leve: O sintoma é perceptível, mas não afeta significativamente as atividades diárias.")
+    print("2. Moderado: O sintoma é incômodo e pode afetar algumas atividades diárias.")
+    print("3. Grave: O sintoma é muito incômodo e afeta significativamente as atividades diárias.")
+    print("4. Muito grave: O sintoma é extremamente incômodo e impede a realização de atividades diárias.")
+
+    opcao = input("Digite o número da opção escolhida: ")
+
+    if opcao == "1":
+        pontos += 1
+    elif opcao == "2":
+        pontos += 2
+    elif opcao == "3":
+        pontos += 3
+    elif opcao == "4":
+        pontos += 4
+    else:
+        print("Opção inválida. Por favor, tente novamente.")
+        questionario_sintomas()
+
+    print("O seu sintoma está piorando ou melhorando?")
+    print("1. Melhorando: O sintoma está diminuindo em intensidade ou frequência.")
+    print("2. Inalterado: O sintoma não mudou em intensidade ou frequência.")
+    print("3. Piorando: O sintoma está aumentando em intensidade ou frequência.")
+
+    opcao = input("Digite o número da opção escolhida: ")
+
+    if opcao == "1":
+        pontos -= 2
+    elif opcao == "2":
+        pass
+    elif opcao == "3":
+        pontos += 2
+    else:
+        print("Opção inválida. Por favor, tente novamente.")
+        questionario_sintomas()
+
+    mensagem = avaliar_pontuacao(pontos)
+    print(mensagem)
+
+    nome, codigo_convenio = confirmar_detalhes()
+
+    consultas_agendadas[nome] = {
+        "tipo_consulta": "Consulta Remota",
+        "nivel_prioridade": mensagem,
+        "sintoma": sintoma,
+        "pontos": pontos,
+        "codigo_convenio": codigo_convenio
+    }
+
+    return sintoma, pontos
+
+
+def confirmar_detalhes():
+    while True:
+        nome = input("Por favor, confirme o seu nome completo: ")
+        if len(nome) <= 30 and nome.replace(' ', '').isalpha():
+            print(f"Nome confirmado: {nome}.")
+        else:
+            print("Nome inválido. Por favor, tente novamente.")
+            continue
+
+        codigo_convenio = input("Por favor, confirme o código do seu convênio: ")
+        if len(codigo_convenio) == 10:
+            print(f"Código do convênio confirmado: {codigo_convenio}.")
+            print("Por favor, fique de olho no seu e-mail. Você receberá um link para uma videochamada com um médico especialista.")
+            break
+        else:
+            print("Código do convênio inválido. Por favor, tente novamente.")
+
+    return nome, codigo_convenio
+
+def avaliar_pontuacao(pontos):
+    if 0 <= pontos <= 2:
+        return "Seus sintomas parecem ser leves e não urgentes. No entanto, é importante monitorá-los. Seus sintomas serão avaliados dentro de 72 horas."
+    elif 3 <= pontos <= 5:
+        return "Seus sintomas podem exigir atenção médica em breve. Por favor, esteja preparado para uma teleconsulta nas próximas 48 horas."
+    elif 6 <= pontos <= 8:
+        return "Seus sintomas são preocupantes e você deve ser avaliado por um médico o mais rápido possível. Por favor, esteja preparado para uma teleconsulta nas próximas 24 horas."
+    elif 9 <= pontos <= 10:
+        return "Seus sintomas são muito graves e exigem atenção médica imediata. Por favor, esteja preparado para uma teleconsulta imediatamente. Se os sintomas piorarem, procure atendimento de emergência."
+    else:
+        return "Pontuação inválida."
+
+# Agora, vamos chamar a função questionario_sintomas() dentro da função teleconsulta()
+
+def teleconsulta():
+    print("Escolha o tipo de consulta que deseja:")
+    print("1. Consulta de Emergência")
+
+    opcao = input("Digite o número da opção escolhida: ")
+
+    if opcao == "1":
+        print("Você escolheu 'Consulta de Emergência'.")
+        print("Este tipo de consulta é destinado para quem precisa ser atendido rapidamente no mesmo dia.")
+        if input("Você deseja prosseguir? (S/N): ").lower() == 's':
+            print("Você escolheu prosseguir com a 'Consulta de Emergência'.")
+            respostas = questionario_emergencia()
+            sintoma, pontos = questionario_sintomas()
+            # Aqui você pode adicionar o fluxo para a 'Consulta de Emergência'
+        else:
+            print("Você escolheu não prosseguir com a 'Consulta de Emergência'.")
+            menu_inicial()
+    else:
+        print("Opção inválida. Por favor, tente novamente.")
+        teleconsulta()
 
 def menu_inicial():
     while True:
@@ -183,11 +403,9 @@ def menu_inicial():
         if opcao == "1":
             agendar_consulta()
         elif opcao == "2":
-            print("Você escolheu 'Cancelar consulta marcada'.")
-            # Aqui você pode chamar a função para cancelar uma consulta
+            cancelar_consulta()
         elif opcao == "3":
-            print("Você escolheu 'Teleconsulta'.")
-            # Aqui você pode chamar a função para agendar uma teleconsulta
+            teleconsulta()
         elif opcao == "4":
             print("Obrigado por usar nosso aplicativo. Até mais!")
             break
@@ -195,7 +413,4 @@ def menu_inicial():
             print("Opção inválida. Por favor, tente novamente.")
 
 menu_inicial()
-
-
-
 
